@@ -1,26 +1,116 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import 'bulma/css/bulma.css';
+import foods from './foods.json';
+import FoodBox from './components/FoodBox';
+import Search from './components/Search';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+
+  state = {
+    food: [...foods],
+    searchedWord: '',
+    temporalNewFood: {name: '', calories: '', image: '', quantity: 0},
+    showForm: false
+  }
+
+  changeSearchedWord = (_value) => {
+    this.setState({searchedWord: _value})
+  }
+
+  checkForIncludedFood = () => {
+    const filteredFoods = this.state.food.filter((food) => {
+      return food.name.toLowerCase().includes(this.state.searchedWord.toLocaleLowerCase())
+    })
+    return filteredFoods
+  }
+
+  renderFood = () => {
+    const finalArrayOfFoods = this.checkForIncludedFood()
+    /*
+    return(
+      <FoodBox
+        name="Pizza"
+        calories="400"
+        image="https://i.imgur.com/eTmWoAN.png"
+      />
+    )
+    */
+
+    return finalArrayOfFoods.map((food, index) => {
+      return(
+        
+        <FoodBox
+        key={index}
+        name={food.name}
+        calories={food.calories}
+        image={food.image}
+        />
+        )
+      })
+    }
+    
+    submitForm = (event) => {
+      event.preventDefault()
+      const copyOfFoods = [...this.state.food]
+      copyOfFoods.unshift(this.state.temporalNewFood)
+
+      this.setState({food: copyOfFoods, showForm: false})
+    }
+
+    renderForm = ()  => {
+      return <form onSubmit={this.submitForm} id='food-form'>
+          <label htmlFor='name'>Name: </label>
+          <input 
+            type='text' 
+            name='name' 
+            onChange={
+              (event)=>this.setState(
+                {temporalNewFood: {...this.state.temporalNewFood, name: event.target.value}}
+              )
+            }
+          />
+
+          <label htmlFor='calories'>Calories: </label>
+          <input 
+            type='text' 
+            name='calories'
+            onChange={
+              (event)=>this.setState(
+                {temporalNewFood: {...this.state.temporalNewFood, calories: event.target.value}}
+              )
+            }
+          />
+
+          <label htmlFor='image'>Image: </label>
+          <input 
+            type='text' 
+            name='image'
+            onChange={
+              (event)=>this.setState(
+                {temporalNewFood: {...this.state.temporalNewFood, image: event.target.value}}
+              )
+            }
+          />
+
+          <button type='submit'>Create</button>
+        </form>
+    }
+
+    render(){
+      return (
+        <div className="app">
+          <button onClick={()=>this.setState({showForm: true})}>Add new food</button>
+          
+          {this.state.showForm && this.renderForm()}
+
+        <Search
+          changeSearchedWord={this.changeSearchedWord}
+        />
+        {this.renderFood()}
+
+      </div>
+    )
+  }
 }
-
 export default App;
